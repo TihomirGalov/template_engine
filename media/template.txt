@@ -1,0 +1,5 @@
+Hello {{ username }},
+you have {{ unread_messages }} new messages:
+{% for message in messages %}
+    - “{{ message }}”
+{% endfor %}
