@@ -38,7 +38,7 @@ void get_names(string *output) {
 }
 
 void strip(string &s) {
-    if(s[0] == ' ' && s[s.length()-1] == ' ') {
+    if (s[0] == ' ' && s[s.length() - 1] == ' ') {
         s.erase(0, 1);
         s.erase(s.length() - 1, 1);
     }
@@ -46,8 +46,8 @@ void strip(string &s) {
 
 bool isInArray(string names[], string substr) {
     int len = names->length();
-    for(int i = 0; i < len; i++) {
-        if(!names[i].compare(substr))
+    for (int i = 0; i < len; i++) {
+        if (!names[i].compare(substr))
             return true;
     }
     return false;
@@ -63,14 +63,14 @@ bool isLoop(string &row, string &var_name, string &arr_name) {
         if (row[i] == ' ')
             continue;
 
-        if(row[i - 1] == '{' && row[i] == '%') {
+        if (row[i - 1] == '{' && row[i] == '%') {
             inLoopBody = true;
             continue;
         }
         if (inLoopBody) {
-            if (row[i] == '}' && row[i - 1] == '%'  && hasVariable)
+            if (row[i] == '}' && row[i - 1] == '%' && hasVariable)
                 return true;
-            if (row[i] == 'n' && row[i-1] == 'i' && var_name.length()) {
+            if (row[i] == 'n' && row[i - 1] == 'i' && var_name.length()) {
                 hasVariable = true;
             }
 
@@ -89,6 +89,7 @@ void for_loop(string names[], int row, string *var_name, string *arr_name) {
     ifstream template_file(TEMPLATE_FILE);
     string template_row;
     int curr_row = 1;
+
     while (getline(template_file, template_row)) {
         if (curr_row++ < row)
             continue;
@@ -98,18 +99,14 @@ void for_loop(string names[], int row, string *var_name, string *arr_name) {
         int start_index = 0, end_index = 0;
 
         for (int i = 0; i < row_len; i++) {
-            if(template_row[i] == '{') {
-                if(template_row[i + 1] == '%')
+            if (template_row[i] == '{') {
+                if (template_row[i + 1] == '%')
                     hasPercentage = true;
-                if(template_row[i + 1] ==  '{')
+                if (template_row[i + 1] == '{')
                     hasBracelet = true;
                 continue;
             }
-
-
         }
-
-
     }
 }
 
@@ -127,12 +124,62 @@ void write_file(string *names) {
         string output_row;
         int row = 1;
         while (getline(template_file, output_row)) {
+
             ofstream output(to_string(index) + ".txt");
             string var_name, arr_name;
-            if(isLoop(output_row, var_name, arr_name) && isInArray(names, arr_name)) {
+
+            int row_length = output_row.length() - 1;
+            int replacer_index = -1, replacer_counter = 0;
+            bool isFor = false, endVar = false;
+
+            for (int i = 0; i < row_length; i++) {
+                if (output_row[i] == ' ')
+                    continue;
+                if (output_row[i] == '{') {
+                    if (output_row[i + 1] == '%') {
+                        replacer_index = i;
+                        replacer_counter++;
+                    }
+                    if (output_row[i + 1] == '{') {
+                        replacer_index = i;
+                        replacer_counter++;
+                        isFor = true;
+
+                    }
+                    i++;
+                    continue;
+                }
+                if (replacer_index > -1) {
+                    if((output_row[i] == '%' || output_row[i] == '}') && output_row[i+1] == '}') {
+                        //@TODO check for valid data, replace
+                        //str.replace(<start>, <length>, <string>)
+
+                    }
+
+
+                    if (isFor) {
+                        if (output_row[i] == 'i' && output_row[i + 1] == 'n' && output_row[i - 1] == ' ' &&
+                            output_row[i + 2] == ' ') {
+                            endVar = true;
+                            i++;
+                        } else if (endVar) {
+                            arr_name.push_back(output_row[i]);
+                        }
+                        continue;
+                    }
+                    var_name.push_back(output_row[i]);
+
+
+                    replacer_counter++;
+                }
+
+            }
+
+
+/*            if (isLoop(output_row, var_name, arr_name) && isInArray(names, arr_name)) {
                 for_loop(names, row, &var_name, &arr_name);
             }
-            row++;
+            row++;*/
 
         }
 
