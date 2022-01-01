@@ -2,7 +2,7 @@
 Template engine is a simple project given me in Introduction to Programming course in Sofia University.
 In the PDF file you can find the whole task combined with examples.
 
-#Running the project
+# Running the project
     1.Create two files (.txt):
         One containing the template data in jinja2 sintax and another containing the data 
         which later will be written in the output file
