@@ -5,8 +5,8 @@
 
 using namespace std;
 
-const string INPUT_FILE = "/home/tihomir/Documents/university/template_engine/media/database.txt";
-const string TEMPLATE_FILE = "/home/tihomir/Documents/university/template_engine/media/template.txt";
+string INPUT_FILE;
+string TEMPLATE_FILE;
 
 
 void get_names(string *output) {
@@ -15,7 +15,7 @@ void get_names(string *output) {
     getline(file, raw_row);
     file.close();
 
-    int row_length = raw_row.size();
+    unsigned int row_length = raw_row.size();
     int index = 0;
     string word;
 
@@ -38,10 +38,10 @@ void get_names(string *output) {
 
 }
 
-int isInArray(string names[], string substr) {
-    int len = names->length();
+int isInArray(string names[], const string &substr) {
+    unsigned int len = names->length();
     for (int i = 0; i < len; i++) {
-        if (!names[i].compare(substr))
+        if (names[i] == substr)
             return i;
     }
     return -1;
@@ -65,7 +65,7 @@ void write_file(string *names) {
 
             string var_name, arr_name;
 
-            int row_length = output_row.length() - 1;
+            unsigned int row_length = output_row.length() - 1;
             int replacer_index = -1;
             bool isFor = false, endVar = false;
 
@@ -125,6 +125,10 @@ void write_file(string *names) {
 }
 
 int main() {
+    cout << "Enter the directory of the input file: ";
+    cin >> INPUT_FILE;
+    cout << "Enter the directory of the template file: ";
+    cin >> TEMPLATE_FILE;
     string names[100];
 
     get_names(names);
