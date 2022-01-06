@@ -4,6 +4,7 @@
 #include <string>
 
 std::string splitByIndex(std::string &data, int index);
+std::string *split(std::string &data);
 
 void strip(std::string &s);
 

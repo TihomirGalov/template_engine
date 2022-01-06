@@ -20,6 +20,22 @@ std::string splitByIndex(std::string &data, int index) {
 
 }
 
+std::string *split(std::string &data) {
+    int len = data.length();
+    int comma_counter = 0;
+    std::string output[100];
+    for (int i = 0; i < len; i++) {
+        if (data[i] == ',') {
+            comma_counter++;
+            continue;
+        }
+        output[comma_counter].push_back(data[i]);
+    }
+
+    return output;
+
+}
+
 
 void strip(std::string &s) {
     if (s[0] == ' ' && s[s.length() - 1] == ' ') {
