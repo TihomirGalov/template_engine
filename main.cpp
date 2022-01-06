@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include "utils.h"
 
 using namespace std;
 
@@ -37,77 +38,13 @@ void get_names(string *output) {
 
 }
 
-void strip(string &s) {
-    if (s[0] == ' ' && s[s.length() - 1] == ' ') {
-        s.erase(0, 1);
-        s.erase(s.length() - 1, 1);
-    }
-}
-
-bool isInArray(string names[], string substr) {
+int isInArray(string names[], string substr) {
     int len = names->length();
     for (int i = 0; i < len; i++) {
         if (!names[i].compare(substr))
-            return true;
+            return i;
     }
-    return false;
-}
-
-
-bool isLoop(string &row, string &var_name, string &arr_name) {
-    int row_length = row.length();
-    bool inLoopBody = false, hasVariable = false;
-
-
-    for (int i = 1; i < row_length; i++) {
-        if (row[i] == ' ')
-            continue;
-
-        if (row[i - 1] == '{' && row[i] == '%') {
-            inLoopBody = true;
-            continue;
-        }
-        if (inLoopBody) {
-            if (row[i] == '}' && row[i - 1] == '%' && hasVariable)
-                return true;
-            if (row[i] == 'n' && row[i - 1] == 'i' && var_name.length()) {
-                hasVariable = true;
-            }
-
-            if (!hasVariable)
-                var_name.push_back(row[i]);
-            else
-                arr_name.push_back(row[i]);
-
-        }
-
-    }
-    return false;
-}
-
-void for_loop(string names[], int row, string *var_name, string *arr_name) {
-    ifstream template_file(TEMPLATE_FILE);
-    string template_row;
-    int curr_row = 1;
-
-    while (getline(template_file, template_row)) {
-        if (curr_row++ < row)
-            continue;
-        int row_len = template_row.length() - 1;
-        bool hasPercentage = false, hasBracelet = false;
-        string local_var;
-        int start_index = 0, end_index = 0;
-
-        for (int i = 0; i < row_len; i++) {
-            if (template_row[i] == '{') {
-                if (template_row[i + 1] == '%')
-                    hasPercentage = true;
-                if (template_row[i + 1] == '{')
-                    hasBracelet = true;
-                continue;
-            }
-        }
-    }
+    return -1;
 }
 
 
@@ -122,14 +59,14 @@ void write_file(string *names) {
 
         ifstream template_file(TEMPLATE_FILE);
         string output_row;
-        int row = 1;
+        ofstream output(to_string(index) + ".txt");
+
         while (getline(template_file, output_row)) {
 
-            ofstream output(to_string(index) + ".txt");
             string var_name, arr_name;
 
             int row_length = output_row.length() - 1;
-            int replacer_index = -1, replacer_counter = 0;
+            int replacer_index = -1;
             bool isFor = false, endVar = false;
 
             for (int i = 0; i < row_length; i++) {
@@ -138,24 +75,31 @@ void write_file(string *names) {
                 if (output_row[i] == '{') {
                     if (output_row[i + 1] == '%') {
                         replacer_index = i;
-                        replacer_counter++;
+                        isFor = true;
                     }
                     if (output_row[i + 1] == '{') {
                         replacer_index = i;
-                        replacer_counter++;
-                        isFor = true;
-
                     }
                     i++;
                     continue;
                 }
                 if (replacer_index > -1) {
-                    if((output_row[i] == '%' || output_row[i] == '}') && output_row[i+1] == '}') {
-                        //@TODO check for valid data, replace
-                        //str.replace(<start>, <length>, <string>)
+                    if (output_row[i + 1] == '}') {
+                        if (output_row[i] == '}') {
+                            string name = output_row.substr(replacer_index + 2, i - replacer_index - 2);
+                            strip(name);
+
+                            int position = isInArray(names, name);
+                            if (position != -1)
+                                output_row.replace(replacer_index, i - replacer_index + 2, splitByIndex(row, position));
+
+
+                        } else if (output_row[i] == '%') {
+                            //@TODO for loop stuff
+                            continue;
+                        }
 
                     }
-
 
                     if (isFor) {
                         if (output_row[i] == 'i' && output_row[i + 1] == 'n' && output_row[i - 1] == ' ' &&
@@ -165,24 +109,16 @@ void write_file(string *names) {
                         } else if (endVar) {
                             arr_name.push_back(output_row[i]);
                         }
+                        var_name.push_back(output_row[i]);
                         continue;
                     }
-                    var_name.push_back(output_row[i]);
-
-
-                    replacer_counter++;
                 }
 
             }
-
-
-/*            if (isLoop(output_row, var_name, arr_name) && isInArray(names, arr_name)) {
-                for_loop(names, row, &var_name, &arr_name);
-            }
-            row++;*/
-
+            output << output_row << endl;
         }
-
+        output.close();
+        template_file.close();
     }
     file.close();
 
@@ -190,8 +126,8 @@ void write_file(string *names) {
 
 int main() {
     string names[100];
-    get_names(names);
 
+    get_names(names);
     write_file(names);
 
     return 0;
