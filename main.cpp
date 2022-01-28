@@ -83,13 +83,9 @@ void write_file(string *names, const string &INPUT_FILE, const string &TEMPLATE_
                     //if it is replacer_index(the index of the string,
                     // from which we will start replacing with our custom data) gets the value of the first opening bracelet
 
-                    if (output_row[i + 1] == '%') { //this means we found the beginning of a for loop
-                        replacer_index = i;
+                    if (output_row[i + 1] == '%') //this means we found the beginning of a for loop
                         declareFor = true;
-                    }
-                    if (isOpeningBracelet(output_row[i + 1])) {
-                        replacer_index = i;
-                    }
+                    replacer_index = i;
                     i++;
                     continue;
                 }
@@ -103,10 +99,10 @@ void write_file(string *names, const string &INPUT_FILE, const string &TEMPLATE_
                             if (position != -1) //if the found variable is in the input file replace its value
                                 output_row.replace(replacer_index, i - replacer_index + 2, splitByIndex(row, position));
 
-                        } else if (output_row[i] == '%') { // means that we are at the {% endfor %} statement
+                        } else if (output_row[i] == '%') {
                             if (declareFor) {
-                                if (isFor) {
-                                    for (int j = 0; j <= array_index; j++) {
+                                if (isFor) { // means that we are at the {% endfor %} statement
+                                    for (unsigned int j = 0; j <= array_index; j++) {
                                         unsigned int loop_len = loop_output.length();
                                         replacer_index = -1;
                                         string edit_loop = loop_output;
@@ -124,8 +120,7 @@ void write_file(string *names, const string &INPUT_FILE, const string &TEMPLATE_
                                                 edit_loop.replace(replacer_index, t - replacer_index + 2,
                                                                   array_values[j]);
                                         }
-                                        output << edit_loop
-                                               << endl; //place everything from the loop body with replaced variables into the output file
+                                        output << edit_loop; //place everything from the loop body with replaced variables into the output file
                                     }
                                     declareFor = false;
                                     isFor = false;
@@ -179,8 +174,11 @@ void write_file(string *names, const string &INPUT_FILE, const string &TEMPLATE_
 
             } else if (!isFor)
                 output << output_row << endl; //if we are not in a loop we place the row in the output file
-            else
+            else {
                 loop_output.append(output_row); // the row doesn't contain any special symbols
+                loop_output.push_back('\n');
+            }
+
         }
         output.close();
         template_file.close();
